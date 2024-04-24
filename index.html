@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sound Counter App</title>
+</head>
+<body>
+<h1>Sound Counter App</h1>
+<p>Count: <span id="count">0</span></p>
+
+<script>
+let count = 0;
+
+navigator.mediaDevices.getUserMedia({ audio: true })
+  .then(function(stream) {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const microphone = audioContext.createMediaStreamSource(stream);
+    const javascriptNode = audioContext.createScriptProcessor(256, 1, 1); // バッファーサイズを小さくする
+
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.fftSize = 1024;
+
+    microphone.connect(analyser);
+    analyser.connect(javascriptNode);
+    javascriptNode.connect(audioContext.destination);
+
+    let isCounting = false; // カウント中かどうかのフラグ
+
+    javascriptNode.onaudioprocess = function() {
+      const array = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(array);
+      const average = array.reduce((acc, val) => acc + val, 0) / array.length;
+
+      // カウント中でない場合、かつ音量が閾値を超える場合にカウントを開始する
+      if (!isCounting && average > 100) {
+        isCounting = true;
+        count++;
+        document.getElementById('count').textContent = count;
+      }
+      
+      // 音量が閾値未満の場合、カウント中フラグをリセットする
+      if (average <= 100) {
+        isCounting = false;
+      }
+    };
+  })
+  .catch(function(err) {
+    console.error('Error capturing audio.', err);
+  });
+</script>
+</body>
+</html>
