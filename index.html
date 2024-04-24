@@ -17,7 +17,7 @@ navigator.mediaDevices.getUserMedia({ audio: true })
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
     const microphone = audioContext.createMediaStreamSource(stream);
-    const javascriptNode = audioContext.createScriptProcessor(268, 1, 1); // バッファーサイズを小さくする
+    const javascriptNode = audioContext.createScriptProcessor(264, 1, 1); // バッファーサイズを小さくする
 
     analyser.smoothingTimeConstant = 0.8;
     analyser.fftSize = 1024;
